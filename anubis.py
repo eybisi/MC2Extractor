@@ -5,7 +5,13 @@ from os import popen, chdir, system
 import base64
 import sys
 
+'''
+python3 anubis.py '~/platform-tools/adb' '~/apk/d2/' 'anubis.bot.myapplication'
+'''
 
+'''
+req: https://github.com/CyberSaxosTiGER/androidDump
+'''
 from pprint import pprint
 import os
 FILE_LIST = []
