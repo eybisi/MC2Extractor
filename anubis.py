@@ -7,19 +7,23 @@ import sys
 from glob import glob
 from typing import List
 '''
+usage
+
 python3 anubis.py '~/platform-tools/adb' '~/apk/d2/' 'anubis.bot.myapplication'
 '''
 
 '''
 req: https://github.com/CyberSaxosTiGER/androidDump
 '''
+
+
 def swap(i, i2, arr):
     i3 = arr[i]
     arr[i] = arr[i2]
     arr[i2] = i3
 
 
-def solve(key:str, encoded:str) -> List:
+def solve(key: str, encoded: str) -> str:
     t = [i for i in range(256)]
 
     c = i2 = 0
@@ -45,7 +49,7 @@ def solve(key:str, encoded:str) -> List:
     return ''.join([chr(x) for x in barr4])
 
 
-def getkey(filename:str) -> List(str):
+def getkey(filename: str) -> List[str]:
     rt = []
     pivot = popen('grep -rnai https://twitter ' + filename +
                   '-out | head -1 ').read().split(':')[0]
@@ -63,21 +67,21 @@ def getkey(filename:str) -> List(str):
     return rt
 
 
-def adbRun(adb:str, packageName:str):
+def adbRun(adb: str, packageName: str):
     system(adb + ' push androidDump.out /data/local/tmp')
     system(adb + ' shell \'cd /data/local/tmp && ./androidDump.out ' +
            packageName + "' &> /dev/null")
     system(adb + ' pull /data/local/tmp')
 
 
-def run(d2j:str, fileName:str):
+def run(d2j: str, fileName: str):
     system(d2j + "d2j-dex2smali.sh tmp/" + fileName + '.dex' + " > /dev/null")
     fileName = popen("find -maxdepth 1 -type d -name '" +
                      fileName + "-out' &> /dev/null ").read()[:-1][2:]
 
 
-def dexExc() -> List(str):
-    filenames = glob('?????')
+def dexExc() -> List[str]:
+    filenames = glob('tmp/?????')
     for filename in filenames:
         with open(filename, 'rb') as f:
             content = f.read()
