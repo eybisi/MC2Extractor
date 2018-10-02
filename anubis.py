@@ -1,7 +1,7 @@
 import requests
 import binascii
 from bs4 import BeautifulSoup
-from os import popen, chdir, system
+from os import popen, chdir, system,path
 import base64
 import sys
 from glob import glob
@@ -9,7 +9,7 @@ from typing import List
 '''
 usage
 
-python3 anubis.py '~/platform-tools/adb' '~/apk/d2/' 'anubis.bot.myapplication'
+python3 anubis.py '~/platform-tools/adb' '~/apk/d2/' 'anubis.bot.myapplication.apk'
 '''
 
 '''
@@ -54,6 +54,7 @@ def getkey(filename: str) -> List[str]:
     pivot = popen('grep -rnai https://twitter ' + filename +
                   '-out | head -1 ').read().split(':')[0]
     twitter = open(pivot).read().split('\n')[50].split('"')[1]
+    
     rt.append(open(pivot).read().split('\n')[56].split('"')[1])
     response = requests.get(twitter)
     rt.append(twitter)
@@ -68,14 +69,25 @@ def getkey(filename: str) -> List[str]:
 
 
 def adbRun(adb: str, packageName: str):
+    if not path.isfile("androidDump.out"):
+        print("Downloading androidDump.out ..")
+        response = requests.get("https://raw.githubusercontent.com/CyberSaxosTiGER/androidDump/blob/master/androidDump.out")
+        f = open("androidDump.out","wb")
+        f.write(response.content)
+        f.close()
     system(adb + ' push androidDump.out /data/local/tmp')
-    system(adb + ' shell \'cd /data/local/tmp && ./androidDump.out ' +
+    system(adb + ' shell \'cd /data/local/tmp && chmod +x androidDump.out && ./androidDump.out ' +
            packageName + "' &> /dev/null")
     system(adb + ' pull /data/local/tmp')
 
+def adbInstall(adb:str,packageName:str):
+    system(adb + ' install '+ packageName)
+
+def adbUnsintall(adb:str,packageName:str):
+    system(adb + ' uninstall '+ packageName[:-4])
 
 def run(d2j: str, fileName: str):
-    system(d2j + "d2j-dex2smali.sh tmp/" + fileName + '.dex' + " > /dev/null")
+    system(d2j + "d2j-dex2smali.sh  tmp/" + fileName + '.dex' + " > /dev/null")
     fileName = popen("find -maxdepth 1 -type d -name '" +
                      fileName + "-out' &> /dev/null ").read()[:-1][2:]
 
@@ -99,18 +111,22 @@ def main():
     adbPath = sys.argv[1]
     dex2jarPath = sys.argv[2]
     packageName = sys.argv[3]
-    adbRun(adbPath, packageName)
+    adbInstall(adbPath,packageName)
+    adbRun(adbPath, packageName[:-4])
 
     for dexName in dexExc():
         run(dex2jarPath, dexName)
         try:
             keys = getkey(dexName)
             system("clear")
-            print(keys[1])
-            print(solve(keys[0], keys[2]))
+            print("twitter: ",keys[1])
+            print("key:     ",keys[0])
+            print("c2:      ",solve(keys[0], keys[2]))
             break
         except:
             pass
+    adbUnsintall(adbPath,packageName)
 
 
 main()
+
